@@ -14,11 +14,11 @@ nopCommerce follows a strict **5-layer architecture**:
 
 Dependency Rules
 
-- `Nop.Core`          ->  nothing
-- `Nop.Data`          ->  Core
-- `Nop.Services`      ->  Core, Data
-- `Nop.Web.Framework` ->  Core, Data, Services
 - `Nop.Web`           ->  Core, Data, Services, Web.Framework
+- `Nop.Web.Framework` ->  Core, Data, Services
+- `Nop.Services`      ->  Core, Data
+- `Nop.Data`          ->  Core
+- `Nop.Core`          ->  nothing
 
 The dependency rule is: **external layers depend on internal ones, never the reverse**. This is a clean separation of concerns that prevents circular dependencies and keeps the architecture modular.
 
