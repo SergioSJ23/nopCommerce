@@ -1,6 +1,6 @@
 ## How are the layers organised and what are the dependency rules between them?
 
-nopCommerce follows a strict **4-layer architecture**:
+nopCommerce follows a strict **5-layer architecture**:
 
 **Core** defines what things are, Order, Product, Customer. No business logic, no database, no HTTP. Just the domain objects and interface contracts that every other layer uses as a shared vocabulary.
 
@@ -8,16 +8,17 @@ nopCommerce follows a strict **4-layer architecture**:
 
 **Services** is where the business rules live, how to place an order, calculate a price, adjust inventory. It calls Data to persist things and publishes events when something meaningful happens. References Core and Data.
 
-**Presentation** is what the user sees and interacts with. Split into two parts: Nop.Web contains the controllers, views, and admin panel. Nop.Web.Framework handles the startup pipeline, request filters, and DI configuration. References everything below it.
+**Web.Framework** handles the startup pipeline, request filters, and DI configuration. It is the infrastructure backbone that bootstraps the application. References Core, Data, and Services.
+
+**Web** is what the user sees and interacts with. Contains the controllers, views, and admin panel. References everything below it.
 
 Dependency Rules
 
-
-Nop.Core          ->  nothing
-Nop.Data          ->  Core
-Nop.Services      ->  Core, Data
-Nop.Web.Framework ->  Core, Data, Services
-Nop.Web           ->  Core, Data, Services, Web.Framework
+- `Nop.Core`          ->  nothing
+- `Nop.Data`          ->  Core
+- `Nop.Services`      ->  Core, Data
+- `Nop.Web.Framework` ->  Core, Data, Services
+- `Nop.Web`           ->  Core, Data, Services, Web.Framework
 
 The dependency rule is: **external layers depend on internal ones, never the reverse**. This is a clean separation of concerns that prevents circular dependencies and keeps the architecture modular.
 
@@ -76,7 +77,7 @@ The minimal changes needed:
 Add a new startup class implementing `INopStartup` to register the OTel SDK, configure exporters, and wire up ASP.NET Core auto-instrumentation, this requires **zero changes to existing files**
 Decorate or replace `EventPublisher` with an instrumented version that creates a span for each published event, a single-file change with no business logic impact
 Add an `ActivitySource` to the repository layer to cover database operations, linq2db has no built-in OTel support, so this gap must be filled manually
-These three changes together give **full-stack coverage, HTTP → service → event → database**, with minimal surgical footprint.
+These three changes together give **full-stack coverage, HTTP -> service -> event -> database**, with minimal surgical footprint.
 
 One change that crosses into structural territory:
 
