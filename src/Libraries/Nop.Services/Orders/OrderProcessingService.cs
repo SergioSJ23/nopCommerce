@@ -1,5 +1,8 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Diagnostics.Metrics;
+using System.Globalization;
 using Newtonsoft.Json;
+using Nop.Core.Telemetry;
 using Nop.Core;
 using Nop.Core.Caching;
 using Nop.Core.Domain.Catalog;
@@ -1578,6 +1581,11 @@ public partial class OrderProcessingService : IOrderProcessingService
         {
             var result = new PlaceOrderResult();
 
+            var cartAge = placeOrderContainer.Cart.Count > 0
+                ? (DateTime.UtcNow - placeOrderContainer.Cart.Min(x => x.CreatedOnUtc)).TotalSeconds
+                : 0;
+            NopActivitySource.CartAgeSeconds.Record(cartAge);
+
             try
             {
                 var processPaymentResult =
@@ -1586,8 +1594,12 @@ public partial class OrderProcessingService : IOrderProcessingService
 
                 if (processPaymentResult.Success)
                 {
+                    NopActivitySource.PaymentErrors.Add(1, new TagList { { "result", "success" } });
+
+                    var dbSw = Stopwatch.StartNew();
                     var order = await SaveOrderDetailsAsync(processPaymentRequest, processPaymentResult,
                         placeOrderContainer);
+                    NopActivitySource.DbWriteDuration.Record(dbSw.Elapsed.TotalMilliseconds);
                     result.PlacedOrder = order;
 
                     //move shopping cart items to order items
@@ -1624,6 +1636,7 @@ public partial class OrderProcessingService : IOrderProcessingService
                 }
                 else
                 {
+                    NopActivitySource.PaymentErrors.Add(1, new TagList { { "result", "failure" } });
                     foreach (var paymentError in processPaymentResult.Errors)
                     {
                         result.AddError(string.Format(
