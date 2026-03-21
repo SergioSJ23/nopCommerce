@@ -1,0 +1,53 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Nop.Core.Infrastructure;
+using Nop.Core.Telemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+
+namespace Nop.Web.Framework.Infrastructure;
+
+/// <summary>
+/// Registers OTel tracing for the order placement flow.
+/// Auto-discovered by NopEngine via INopStartup — no changes to Program.cs needed.
+/// </summary>
+public class OTelStartup : INopStartup
+{
+    public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    {
+        var otlpEndpoint = configuration.GetValue<string>("OTel:OtlpEndpoint") ?? "http://localhost:4317";
+
+        services.AddOpenTelemetry()
+            .ConfigureResource(resource => resource.AddService(
+                serviceName: "nopCommerce",
+                serviceVersion: "5.0"))
+            .WithTracing(tracing => tracing
+                .AddAspNetCoreInstrumentation(options =>
+                {
+                    // exclude static assets — they add noise without operational value
+                    options.Filter = ctx =>
+                        !ctx.Request.Path.StartsWithSegments("/lib") &&
+                        !ctx.Request.Path.StartsWithSegments("/images") &&
+                        !ctx.Request.Path.StartsWithSegments("/css") &&
+                        !ctx.Request.Path.StartsWithSegments("/js");
+                })
+                .AddSource(NopActivitySource.ActivitySourceName)
+                .AddOtlpExporter(options => options.Endpoint = new Uri(otlpEndpoint)))
+            .WithMetrics(metrics => metrics
+                .AddMeter(NopActivitySource.ActivitySourceName)
+                .AddAspNetCoreInstrumentation()
+                .AddPrometheusExporter());
+    }
+
+    public void Configure(IApplicationBuilder application)
+    {
+        application.UseOpenTelemetryPrometheusScrapingEndpoint();
+    }
+
+    /// <summary>
+    /// Run after NopStartup (2000) so all services are already registered
+    /// </summary>
+    public int Order => 2100;
+}

@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Nop.Core.Telemetry;
 using Nop.Core;
 using Nop.Core.Domain.Common;
 using Nop.Core.Domain.Customers;
@@ -1329,16 +1331,29 @@ public partial class CheckoutController : BasePublicController
             processPaymentRequest.PaymentMethodSystemName = await _genericAttributeService.GetAttributeAsync<string>(customer,
                 NopCustomerDefaults.SelectedPaymentMethodAttribute, store.Id);
             await _orderProcessingService.SetProcessPaymentRequestAsync(processPaymentRequest);
+
+            using var placeOrderActivity = NopActivitySource.ActivitySource.StartActivity("checkout.place_order");
+            placeOrderActivity?.SetTag("checkout.payment_method", processPaymentRequest.PaymentMethodSystemName);
+            placeOrderActivity?.SetTag("checkout.store_id", processPaymentRequest.StoreId);
+
             var placeOrderResult = await _orderProcessingService.PlaceOrderAsync(processPaymentRequest);
             if (placeOrderResult.Success)
             {
+                placeOrderActivity?.SetTag("checkout.order_id", placeOrderResult.PlacedOrder.Id);
+                placeOrderActivity?.SetStatus(ActivityStatusCode.Ok);
+
                 await _orderProcessingService.SetProcessPaymentRequestAsync(null);
 
                 var postProcessPaymentRequest = new PostProcessPaymentRequest
                 {
                     Order = placeOrderResult.PlacedOrder
                 };
+
+                using var postPaymentActivity = NopActivitySource.ActivitySource.StartActivity("checkout.post_process_payment");
+                postPaymentActivity?.SetTag("checkout.order_id", placeOrderResult.PlacedOrder.Id);
+                postPaymentActivity?.SetTag("checkout.payment_method", processPaymentRequest.PaymentMethodSystemName);
                 await _paymentService.PostProcessPaymentAsync(postProcessPaymentRequest);
+                postPaymentActivity?.SetStatus(ActivityStatusCode.Ok);
 
                 if (_webHelper.IsRequestBeingRedirected || _webHelper.IsPostBeingDone)
                 {
@@ -1349,6 +1364,7 @@ public partial class CheckoutController : BasePublicController
                 return RedirectToRoute(NopRouteNames.Standard.CHECKOUT_COMPLETED, new { orderId = placeOrderResult.PlacedOrder.Id });
             }
 
+            placeOrderActivity?.SetStatus(ActivityStatusCode.Error, string.Join("; ", placeOrderResult.Errors));
             foreach (var error in placeOrderResult.Errors)
                 model.Warnings.Add(error);
         }
