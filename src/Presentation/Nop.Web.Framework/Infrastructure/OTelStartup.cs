@@ -6,6 +6,7 @@ using Nop.Core.Telemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using OpenTelemetry.Exporter;
 
 namespace Nop.Web.Framework.Infrastructure;
 
@@ -38,12 +39,16 @@ public class OTelStartup : INopStartup
             .WithMetrics(metrics => metrics
                 .AddMeter(NopActivitySource.ActivitySourceName)
                 .AddAspNetCoreInstrumentation()
-                .AddPrometheusExporter());
+                .AddOtlpExporter(options =>
+                {
+                    options.Endpoint = new Uri(otlpEndpoint);
+                    options.Protocol = OtlpExportProtocol.Grpc;
+                }));
     }
 
     public void Configure(IApplicationBuilder application)
     {
-        application.UseOpenTelemetryPrometheusScrapingEndpoint();
+        // metrics are pushed via OTLP — no scraping endpoint needed
     }
 
     /// <summary>

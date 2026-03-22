@@ -16,14 +16,14 @@ public static class NopActivitySource
     public static readonly Meter Meter = new(ActivitySourceName, "1.0.0");
 
     public static readonly Histogram<double> DbWriteDuration =
-        Meter.CreateHistogram<double>("checkout.db_write_duration", unit: "ms",
-            description: "Duration of SaveOrderDetailsAsync — DB degradation is visible here before HTTP timeouts reach users");
+        Meter.CreateHistogram<double>("checkout.db_write_duration",
+            description: "Duration of SaveOrderDetailsAsync in ms — DB degradation is visible here before HTTP timeouts reach users");
 
     public static readonly Counter<long> PaymentErrors =
         Meter.CreateCounter<long>("checkout.payment_errors",
             description: "Payment attempt outcomes tagged by result — partial provider degradation shows as rising failure rate before 100% outage");
 
     public static readonly Histogram<double> CartAgeSeconds =
-        Meter.CreateHistogram<double>("checkout.cart_age_seconds", unit: "s",
-            description: "Age of cart at checkout time — values below 5s indicate bot activity or automation");
+        Meter.CreateHistogram<double>("checkout.cart_age_seconds",
+            description: "Age of cart at checkout time in seconds — values below 5s indicate bot activity or automation");
 }

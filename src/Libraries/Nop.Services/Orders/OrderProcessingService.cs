@@ -1592,6 +1592,12 @@ public partial class OrderProcessingService : IOrderProcessingService
                     await GetProcessPaymentResultAsync(processPaymentRequest, placeOrderContainer)
                     ?? throw new NopException("processPaymentResult is not available");
 
+                // Load-test simulation: set PAYMENT_FAILURE_RATE=0.3 in docker-compose to inject ~30% declines.
+                // Default is 0 — no effect in production.
+                if (double.TryParse(Environment.GetEnvironmentVariable("PAYMENT_FAILURE_RATE"), out var failureRate)
+                    && failureRate > 0 && Random.Shared.NextDouble() < failureRate)
+                    processPaymentResult.AddError("Card declined by issuer (simulated)");
+
                 if (processPaymentResult.Success)
                 {
                     NopActivitySource.PaymentErrors.Add(1, new TagList { { "result", "success" } });
