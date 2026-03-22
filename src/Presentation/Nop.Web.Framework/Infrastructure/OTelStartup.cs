@@ -39,6 +39,12 @@ public class OTelStartup : INopStartup
             .WithMetrics(metrics => metrics
                 .AddMeter(NopActivitySource.ActivitySourceName)
                 .AddAspNetCoreInstrumentation()
+                .AddView(
+                    instrumentName: "checkout.cart_age_seconds",
+                    metricStreamConfiguration: new ExplicitBucketHistogramConfiguration
+                    {
+                        Boundaries = new double[] { 1, 2, 5, 10, 15, 20, 30, 45, 60, 120, 300 }
+                    })
                 .AddOtlpExporter(options =>
                 {
                     options.Endpoint = new Uri(otlpEndpoint);

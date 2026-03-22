@@ -168,7 +168,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(checkout_payment_errors_total{result=\"failure\"}[1m]))",
+          "expr": "sum(rate(checkout_payment_errors_total{result=\"timeout\"}[1m]))",
           "legendFormat": "failure",
           "refId": "B"
         }
@@ -201,8 +201,8 @@
         "cellGap": 1,
         "color": {
           "mode": "scheme",
-          "scheme": "Reds",
-          "fill": "dark-red",
+          "scheme": "Blues",
+          "fill": "dark-blue",
           "reverse": true,
           "steps": 64,
           "min": 0,
@@ -245,7 +245,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(checkout_cart_age_seconds_bucket[1m])) by (le)",
+          "expr": "round(sum(increase(checkout_cart_age_seconds_bucket{le=~\"1|2|5|10|15|20|30|45|60\"}[1m])) by (le))",
           "format": "heatmap",
           "legendFormat": "{{le}}",
           "refId": "A"
@@ -315,7 +315,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(checkout_payment_errors_total{result=\"failure\"}[1m])) / sum(rate(checkout_payment_errors_total[1m])) * 100",
+          "expr": "sum(rate(checkout_payment_errors_total{result=\"timeout\"}[1m])) / sum(rate(checkout_payment_errors_total[1m])) * 100",
           "legendFormat": "error rate %",
           "refId": "A"
         }

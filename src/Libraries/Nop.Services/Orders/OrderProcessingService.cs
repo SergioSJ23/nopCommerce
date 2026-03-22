@@ -1596,7 +1596,7 @@ public partial class OrderProcessingService : IOrderProcessingService
                 // Default is 0 — no effect in production.
                 if (double.TryParse(Environment.GetEnvironmentVariable("PAYMENT_FAILURE_RATE"), out var failureRate)
                     && failureRate > 0 && Random.Shared.NextDouble() < failureRate)
-                    processPaymentResult.AddError("Card declined by issuer (simulated)");
+                    processPaymentResult.AddError("Payment gateway timeout (simulated)");
 
                 if (processPaymentResult.Success)
                 {
@@ -1642,7 +1642,7 @@ public partial class OrderProcessingService : IOrderProcessingService
                 }
                 else
                 {
-                    NopActivitySource.PaymentErrors.Add(1, new TagList { { "result", "failure" } });
+                    NopActivitySource.PaymentErrors.Add(1, new TagList { { "result", "timeout" } });
                     foreach (var paymentError in processPaymentResult.Errors)
                     {
                         result.AddError(string.Format(
