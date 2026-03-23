@@ -159,7 +159,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(checkout_payment_errors_total{result=\"success\"}[1m]))",
+          "expr": "sum(rate(checkout_provider_outcome_total{result=\"success\"}[1m]))",
           "legendFormat": "success",
           "refId": "A"
         },
@@ -168,12 +168,12 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(checkout_payment_errors_total{result=\"timeout\"}[1m]))",
+          "expr": "sum(rate(checkout_provider_outcome_total{result=\"timeout\"}[1m]))",
           "legendFormat": "failure",
           "refId": "B"
         }
       ],
-      "title": "Payment Results (success / failure)",
+      "title": "Payment Provider Outcomes (timeout rate)",
       "type": "timeseries"
     },
     {
@@ -315,12 +315,12 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(checkout_payment_errors_total{result=\"timeout\"}[1m])) / sum(rate(checkout_payment_errors_total[1m])) * 100",
+          "expr": "sum(rate(checkout_provider_outcome_total{result=\"timeout\"}[1m])) / sum(rate(checkout_provider_outcome_total[1m])) * 100",
           "legendFormat": "error rate %",
           "refId": "A"
         }
       ],
-      "title": "Checkout Error Rate",
+      "title": "Error Rate",
       "type": "timeseries"
     },
     {

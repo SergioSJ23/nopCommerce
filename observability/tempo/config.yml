@@ -13,7 +13,7 @@ distributor:
 ingester:
   trace_idle_period: 10s
   max_block_bytes: 1_000_000
-  max_block_duration: 5m
+  max_block_duration: 30s
 
 compactor:
   compaction:

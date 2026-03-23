@@ -20,8 +20,8 @@ public static class NopActivitySource
             description: "Duration of SaveOrderDetailsAsync in ms — DB degradation is visible here before HTTP timeouts reach users");
 
     public static readonly Counter<long> PaymentErrors =
-        Meter.CreateCounter<long>("checkout.payment_errors",
-            description: "Payment attempt outcomes tagged by result — partial provider degradation shows as rising failure rate before 100% outage");
+        Meter.CreateCounter<long>("checkout.provider_outcome",
+            description: "Payment provider outcomes tagged by result — partial provider degradation shows as rising failure rate before 100% outage");
 
     public static readonly Histogram<double> CartAgeSeconds =
         Meter.CreateHistogram<double>("checkout.cart_age_seconds",

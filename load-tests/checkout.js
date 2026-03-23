@@ -3,7 +3,7 @@
  *
  * Generates traffic that exercises all 3 custom OTel metrics:
  *   • checkout.cart_age_seconds   — how long the cart existed before checkout
- *   • checkout.payment_errors     — payment success / failure counter
+ *   • checkout.provider_outcome     — payment success / failure counter
  *   • checkout.db_write_duration  — time spent saving the order to the DB
  *
  * ── Setup ──────────────────────────────────────────────────────────────────
