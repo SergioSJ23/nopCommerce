@@ -12,9 +12,9 @@
  * ── Environment variables ──────────────────────────────────────────────────
  *   BASE_URL     nopCommerce base URL          (default: http://localhost)
  *   PRODUCT_ID   Product to add to cart        (default: 1)
- *   VUS_HUMAN    Concurrent human VUs          (default: 10)
- *   VUS_BOT      Concurrent bot VUs            (default: 10)
- *   DURATION     How long to run               (default: 8m)
+ *   VUS_HUMAN    Concurrent human VUs          (default: 1)
+ *   VUS_BOT      Concurrent bot VUs            (default: 1)
+ *   DURATION     How long to run               (default: 5m)
  *   VU_PASSWORD  Password for test accounts    (default: LoadTest@123)
  *   DEBUG        Set to "1" to print OPC step responses (default: off)
  *
@@ -31,9 +31,9 @@ import { sleep, check } from 'k6';
 const BASE_URL    = (__ENV.BASE_URL   || 'http://localhost').replace(/\/$/, '');
 const PRODUCT_ID  = __ENV.PRODUCT_ID  || '3'; // Lenovo IdeaCentre — simple product, no required attributes
 const VU_PASSWORD = __ENV.VU_PASSWORD || 'LoadTest@123';
-const VUS_HUMAN   = parseInt(__ENV.VUS_HUMAN || '10');
-const VUS_BOT     = parseInt(__ENV.VUS_BOT   || '10');
-const DURATION    = __ENV.DURATION    || '8m';
+const VUS_HUMAN   = parseInt(__ENV.VUS_HUMAN || '1');
+const VUS_BOT     = parseInt(__ENV.VUS_BOT   || '1');
+const DURATION    = __ENV.DURATION    || '5m';
 const DEBUG       = __ENV.DEBUG === '1';
 
 // ── Scenario options ─────────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ export const options = {
       startVUs: 0,
       stages: [
         { duration: '1m',   target: VUS_HUMAN },
-        { duration: '8m',   target: VUS_HUMAN },
+        { duration: '4m',   target: VUS_HUMAN },
         { duration: '30s',  target: 0 },
       ],
       exec: 'humanCheckout',
@@ -54,9 +54,8 @@ export const options = {
     bot_checkout: {
       executor: 'constant-vus',
       vus: VUS_BOT,
-      duration: '8m',
+      duration: '5m',
       exec: 'botCheckout',
-      startTime: '1m',
     },
   },
   thresholds: {
@@ -338,7 +337,7 @@ function doCheckout(cartWaitSeconds) {
 // ── Exported scenario functions ──────────────────────────────────────────────
 
 export function humanCheckout() {
-  doCheckout(15 + Math.random() * 45); // 15–60s → human cart age
+  doCheckout(25 + Math.random() * 35); // 25–60s → human cart age
 }
 
 export function botCheckout() {

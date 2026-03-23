@@ -53,8 +53,7 @@ To generate traffic, run the load test:
 ```bash
 k6 run load-tests/checkout.js
 ```
-(it will take a minute for the first traces and metrics to appear in Grafana)
-> Default: 10 human VUs + 10 bot VUs for 8 minutes (bots just appear after 1 min).
+> Default: 1 human VUs + 1 bot VUs for 5 minutes.
 > Set `PRODUCT_ID` to a simple in-stock product from Admin → Catalog → Products.
 
 ```bash

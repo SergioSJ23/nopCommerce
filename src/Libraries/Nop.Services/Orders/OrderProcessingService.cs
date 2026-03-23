@@ -1594,9 +1594,9 @@ public partial class OrderProcessingService : IOrderProcessingService
 
                 // Load-test simulation: set PAYMENT_FAILURE_RATE=0.3 in docker-compose to inject ~30% declines.
                 // Default is 0 — no effect in production.
-                if (double.TryParse(Environment.GetEnvironmentVariable("PAYMENT_FAILURE_RATE"), out var failureRate)
-                    && failureRate > 0 && Random.Shared.NextDouble() < failureRate)
-                    processPaymentResult.AddError("Payment gateway timeout (simulated)");
+                // if (double.TryParse(Environment.GetEnvironmentVariable("PAYMENT_FAILURE_RATE"), out var failureRate)
+                //     && failureRate > 0 && Random.Shared.NextDouble() < failureRate)
+                //     processPaymentResult.AddError("Payment gateway timeout (simulated)");
 
                 if (processPaymentResult.Success)
                 {

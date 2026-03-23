@@ -315,7 +315,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(checkout_provider_outcome_total{result=\"timeout\"}[1m])) / sum(rate(checkout_provider_outcome_total[1m])) * 100",
+          "expr": "(sum(rate(checkout_provider_outcome_total{result=\"timeout\"}[1m])) or vector(0)) / sum(rate(checkout_provider_outcome_total[1m])) * 100",
           "legendFormat": "error rate %",
           "refId": "A"
         }
