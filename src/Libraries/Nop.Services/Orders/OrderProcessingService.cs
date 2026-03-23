@@ -1574,6 +1574,8 @@ public partial class OrderProcessingService : IOrderProcessingService
         if (processPaymentRequest.OrderGuid == Guid.Empty)
             throw new Exception("Order GUID is not generated");
 
+        using var activity = NopActivitySource.ActivitySource.StartActivity("checkout.process_order");
+
         //prepare order details
         var details = await PreparePlaceOrderDetailsAsync(processPaymentRequest);
 
