@@ -54,11 +54,6 @@ To generate traffic, run the load test:
 k6 run load-tests/checkout.js
 ```
 > Default: 1 human VUs + 1 bot VUs for 5 minutes.
-> Set `PRODUCT_ID` to a simple in-stock product from Admin → Catalog → Products.
-
-```bash
-k6 run load-tests/checkout.js -e PRODUCT_ID=3
-```
 
 
 
