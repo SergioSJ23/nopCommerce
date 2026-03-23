@@ -11,7 +11,7 @@
  *
  * ── Environment variables ──────────────────────────────────────────────────
  *   BASE_URL     nopCommerce base URL          (default: http://localhost)
- *   PRODUCT_ID   Product to add to cart        (default: 1)
+ *   PRODUCT_ID   Product to add to cart        (default: 3)
  *   VUS_HUMAN    Concurrent human VUs          (default: 1)
  *   VUS_BOT      Concurrent bot VUs            (default: 1)
  *   DURATION     How long to run               (default: 5m)
@@ -44,7 +44,7 @@ export const options = {
       executor: 'ramping-vus',
       startVUs: 0,
       stages: [
-        { duration: '1m',   target: VUS_HUMAN },
+        { duration: '10s',   target: VUS_HUMAN },
         { duration: '4m',   target: VUS_HUMAN },
         { duration: '30s',  target: 0 },
       ],

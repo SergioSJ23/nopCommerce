@@ -5,6 +5,7 @@ using Nop.Core.Caching;
 using Nop.Core.Configuration;
 using Nop.Core.Domain.Common;
 using Nop.Core.Events;
+using Nop.Core.Telemetry;
 
 namespace Nop.Data;
 
@@ -341,6 +342,9 @@ public partial class EntityRepository<TEntity> : IRepository<TEntity> where TEnt
     public virtual async Task InsertAsync(TEntity entity, bool publishEvent = true)
     {
         ArgumentNullException.ThrowIfNull(entity);
+
+        using var activity = NopActivitySource.ActivitySource.StartActivity("db.insert");
+        activity?.SetTag("db.entity_type", typeof(TEntity).Name);
 
         await _dataProvider.InsertEntityAsync(entity);
 

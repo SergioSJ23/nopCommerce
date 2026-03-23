@@ -1349,11 +1349,7 @@ public partial class CheckoutController : BasePublicController
                     Order = placeOrderResult.PlacedOrder
                 };
 
-                using var postPaymentActivity = NopActivitySource.ActivitySource.StartActivity("checkout.post_process_payment");
-                postPaymentActivity?.SetTag("checkout.order_id", placeOrderResult.PlacedOrder.Id);
-                postPaymentActivity?.SetTag("checkout.payment_method", processPaymentRequest.PaymentMethodSystemName);
                 await _paymentService.PostProcessPaymentAsync(postProcessPaymentRequest);
-                postPaymentActivity?.SetStatus(ActivityStatusCode.Ok);
 
                 if (_webHelper.IsRequestBeingRedirected || _webHelper.IsPostBeingDone)
                 {
@@ -2085,9 +2081,17 @@ public partial class CheckoutController : BasePublicController
                 processPaymentRequest.PaymentMethodSystemName = await _genericAttributeService.GetAttributeAsync<string>(customer,
                     NopCustomerDefaults.SelectedPaymentMethodAttribute, store.Id);
                 await _orderProcessingService.SetProcessPaymentRequestAsync(processPaymentRequest);
+
+                using var placeOrderActivity = NopActivitySource.ActivitySource.StartActivity("checkout.place_order");
+                placeOrderActivity?.SetTag("checkout.payment_method", processPaymentRequest.PaymentMethodSystemName);
+                placeOrderActivity?.SetTag("checkout.store_id", processPaymentRequest.StoreId);
+
                 var placeOrderResult = await _orderProcessingService.PlaceOrderAsync(processPaymentRequest);
                 if (placeOrderResult.Success)
                 {
+                    placeOrderActivity?.SetTag("checkout.order_id", placeOrderResult.PlacedOrder.Id);
+                    placeOrderActivity?.SetStatus(ActivityStatusCode.Ok);
+
                     await _orderProcessingService.SetProcessPaymentRequestAsync(null);
                     var postProcessPaymentRequest = new PostProcessPaymentRequest
                     {
@@ -2117,6 +2121,8 @@ public partial class CheckoutController : BasePublicController
                     //success
                     return Json(new { success = 1 });
                 }
+
+                placeOrderActivity?.SetStatus(ActivityStatusCode.Error, string.Join("; ", placeOrderResult.Errors));
 
                 //error
                 foreach (var error in placeOrderResult.Errors)

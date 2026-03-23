@@ -284,6 +284,7 @@ public partial class OrderProcessingService : IOrderProcessingService
     /// </returns>
     protected virtual async Task<PlaceOrderContainer> PreparePlaceOrderDetailsAsync(ProcessPaymentRequest processPaymentRequest)
     {
+        using var prepareActivity = NopActivitySource.ActivitySource.StartActivity("order.prepare");
         var details = new PlaceOrderContainer();
 
         var currentCurrency = await _workContext.GetWorkingCurrencyAsync();
@@ -1390,6 +1391,9 @@ public partial class OrderProcessingService : IOrderProcessingService
     /// </returns>
     protected virtual async Task<ProcessPaymentResult> GetProcessPaymentResultAsync(ProcessPaymentRequest processPaymentRequest, PlaceOrderContainer details)
     {
+        using var paymentActivity = NopActivitySource.ActivitySource.StartActivity("payment.result");
+        paymentActivity?.SetTag("checkout.payment_method", processPaymentRequest.PaymentMethodSystemName);
+
         //process payment
         ProcessPaymentResult processPaymentResult;
         //check if is payment workflow required
@@ -1422,6 +1426,8 @@ public partial class OrderProcessingService : IOrderProcessingService
         else
             //payment is not required
             processPaymentResult = new ProcessPaymentResult { NewPaymentStatus = PaymentStatus.Paid };
+
+        paymentActivity?.SetStatus(processPaymentResult.Success ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
         return processPaymentResult;
     }
 
@@ -1579,6 +1585,7 @@ public partial class OrderProcessingService : IOrderProcessingService
 
         async Task<PlaceOrderResult> placeOrder(PlaceOrderContainer placeOrderContainer)
         {
+            using var orderPlaceActivity = NopActivitySource.ActivitySource.StartActivity("order.place");
             var result = new PlaceOrderResult();
 
             var cartAge = placeOrderContainer.Cart.Count > 0
@@ -1657,7 +1664,12 @@ public partial class OrderProcessingService : IOrderProcessingService
             }
 
             if (result.Success)
+            {
+                orderPlaceActivity?.SetStatus(ActivityStatusCode.Ok);
                 return result;
+            }
+
+            orderPlaceActivity?.SetStatus(ActivityStatusCode.Error, result.Errors.FirstOrDefault() ?? "Order placement failed");
 
             //log errors
             var logError = result.Errors.Aggregate("Error while placing order. ",
