@@ -1427,6 +1427,7 @@ public partial class OrderProcessingService : IOrderProcessingService
             //payment is not required
             processPaymentResult = new ProcessPaymentResult { NewPaymentStatus = PaymentStatus.Paid };
 
+        paymentActivity?.SetTag("checkout.payment_outcome", processPaymentResult.Success ? "success" : "failure");
         paymentActivity?.SetStatus(processPaymentResult.Success ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
         return processPaymentResult;
     }
@@ -1586,6 +1587,9 @@ public partial class OrderProcessingService : IOrderProcessingService
         async Task<PlaceOrderResult> placeOrder(PlaceOrderContainer placeOrderContainer)
         {
             using var orderPlaceActivity = NopActivitySource.ActivitySource.StartActivity("order.place");
+            orderPlaceActivity?.SetTag("checkout.order_total", placeOrderContainer.OrderTotal);
+            orderPlaceActivity?.SetTag("checkout.currency", placeOrderContainer.CustomerCurrencyCode);
+            orderPlaceActivity?.SetTag("checkout.cart_items", placeOrderContainer.Cart.Count);
             var result = new PlaceOrderResult();
 
             var cartAge = placeOrderContainer.Cart.Count > 0
@@ -1601,9 +1605,9 @@ public partial class OrderProcessingService : IOrderProcessingService
 
                 // Load-test simulation: set PAYMENT_FAILURE_RATE=0.3 in docker-compose to inject ~30% declines.
                 // Default is 0 — no effect in production.
-                // if (double.TryParse(Environment.GetEnvironmentVariable("PAYMENT_FAILURE_RATE"), out var failureRate)
-                //     && failureRate > 0 && Random.Shared.NextDouble() < failureRate)
-                //     processPaymentResult.AddError("Payment gateway timeout (simulated)");
+                //if (double.TryParse(Environment.GetEnvironmentVariable("PAYMENT_FAILURE_RATE"), out var failureRate)
+                //    && failureRate > 0 && Random.Shared.NextDouble() < failureRate)
+                //    processPaymentResult.AddError("Payment gateway timeout (simulated)");
 
                 if (processPaymentResult.Success)
                 {
