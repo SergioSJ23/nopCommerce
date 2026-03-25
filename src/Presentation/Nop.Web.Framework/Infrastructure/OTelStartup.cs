@@ -33,6 +33,13 @@ public class OTelStartup : INopStartup
                         !ctx.Request.Path.StartsWithSegments("/images") &&
                         !ctx.Request.Path.StartsWithSegments("/css") &&
                         !ctx.Request.Path.StartsWithSegments("/js");
+
+                    // replace generic route template names with the actual request path
+                    options.EnrichWithHttpRequest = (activity, request) =>
+                    {
+                        if (activity.DisplayName.Contains("{controller="))
+                            activity.DisplayName = $"{request.Method} {request.Path}";
+                    };
                 })
                 .AddSource(NopActivitySource.ActivitySourceName)
                 .AddOtlpExporter(options => options.Endpoint = new Uri(otlpEndpoint)))

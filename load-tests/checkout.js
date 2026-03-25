@@ -31,8 +31,8 @@ import { sleep, check } from 'k6';
 const BASE_URL    = (__ENV.BASE_URL   || 'http://localhost').replace(/\/$/, '');
 const PRODUCT_ID  = __ENV.PRODUCT_ID  || '3'; // Lenovo IdeaCentre — simple product, no required attributes
 const VU_PASSWORD = __ENV.VU_PASSWORD || 'LoadTest@123';
-const VUS_HUMAN   = parseInt(__ENV.VUS_HUMAN || '1');
-const VUS_BOT     = parseInt(__ENV.VUS_BOT   || '1');
+const VUS_HUMAN   = parseInt(__ENV.VUS_HUMAN || '3');
+const VUS_BOT     = parseInt(__ENV.VUS_BOT   || '3');
 const DURATION    = __ENV.DURATION    || '5m';
 const DEBUG       = __ENV.DEBUG === '1';
 
