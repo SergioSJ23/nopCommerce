@@ -2,10 +2,48 @@
 
 **Flow instrumented:** Customer places an order — Basket → Order → Payment → Inventory
 
+## Repository Structure
+
+```
+nopCommerce/
+├── README.md                              ← build, run, dashboard instructions (this file)
+├── ANALYSIS.md                            ← architecture analysis 
+├── CRITIQUE.md                            ← architectural critique 
+├── docker-compose.yml                     ← full stack (app + observability)
+├── docs/
+│   └── imgs/
+│       ├── diagrams/
+│       │   └── architecture_diagram.png   ← instrumented flow diagram
+│       └── screenshots/                   ← Grafana dashboard evidence
+│           ├── dashboard.png
+│           ├── spans.png
+│           ├── traces.png
+│           ├── cart_age.png
+│           ├── db_write.png
+│           ├── error_rate.png
+│           └── payment_provider.png
+├── grafana/
+│   ├── dashboards/
+│   │   └── checkout-flow.json             ← exported Grafana 
+│   └── provisioning/                      ← auto-provisioning config
+│       ├── datasources/
+│       │   └── datasources.yml            ← Prometheus + Tempo datasources
+│       └── dashboards/
+│           └── dashboards.yml             ← dashboard folder discovery
+├── load-tests/
+│   └── checkout.js                        ← k6 load test script
+├── observability/
+│   ├── otel-collector/config.yml
+│   ├── prometheus/config.yml
+│   └── tempo/config.yml
+└── src/                                   ← nopCommerce source 
+```
+
+---
 
 ## Architecture Diagram
 
-![Architecture Diagram](docs/imgs/architecture_diagram.png)
+![Architecture Diagram](docs/imgs/diagrams/architecture_diagram.png)
 
 ## How to Build and Run
 
@@ -53,7 +91,7 @@ To generate traffic, run the load test:
 ```bash
 k6 run load-tests/checkout.js
 ```
-> Default: 1 human VUs + 1 bot VUs for 5 minutes.
+> Default: 3 human VUs + 3 bot VUs for 5 minutes.
 
 
 
